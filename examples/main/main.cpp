@@ -66,6 +66,7 @@ struct whisper_params {
 
     bool speed_up       = false;
     bool translate      = false;
+    bool detect_language= false;
     bool diarize        = false;
     bool split_on_word  = false;
     bool no_fallback    = false;
@@ -141,6 +142,7 @@ bool whisper_params_parse(int argc, char ** argv, whisper_params & params) {
         else if (arg == "-pp"   || arg == "--print-progress") { params.print_progress = true; }
         else if (arg == "-nt"   || arg == "--no-timestamps")  { params.no_timestamps  = true; }
         else if (arg == "-l"    || arg == "--language")       { params.language       = argv[++i]; }
+        else if (arg == "-dl"   || arg == "--detect-language"){ params.detect_language= true; }
         else if (                  arg == "--prompt")         { params.prompt         = argv[++i]; }
         else if (arg == "-m"    || arg == "--model")          { params.model          = argv[++i]; }
         else if (arg == "-f"    || arg == "--file")           { params.fname_inp.emplace_back(argv[++i]); }
@@ -191,6 +193,7 @@ void whisper_print_usage(int /*argc*/, char ** argv, const whisper_params & para
     fprintf(stderr, "  -pp,       --print-progress    [%-7s] print progress\n",                                 params.print_progress ? "true" : "false");
     fprintf(stderr, "  -nt,       --no-timestamps     [%-7s] do not print timestamps\n",                        params.no_timestamps ? "false" : "true");
     fprintf(stderr, "  -l LANG,   --language LANG     [%-7s] spoken language ('auto' for auto-detect)\n",       params.language.c_str());
+    fprintf(stderr, "  -dl,       --detect-language   [%-7s] exit after automatically detecting language\n",    params.detect_language ? "true" : "false");
     fprintf(stderr, "             --prompt PROMPT     [%-7s] initial prompt\n",                                 params.prompt.c_str());
     fprintf(stderr, "  -m FNAME,  --model FNAME       [%-7s] model path\n",                                     params.model.c_str());
     fprintf(stderr, "  -f FNAME,  --file FNAME        [%-7s] input WAV file path\n",                            "");
@@ -722,27 +725,7 @@ int main(int argc, char ** argv) {
             continue;
         }
 
-        // print system information
-        {
-            fprintf(stderr, "\n");
-            fprintf(stderr, "system_info: n_threads = %d / %d | %s\n",
-                    params.n_threads*params.n_processors, std::thread::hardware_concurrency(), whisper_print_system_info());
-        }
-
-        // print some info about the processing
-        {
-            fprintf(stderr, "\n");
-            if (!whisper_is_multilingual(ctx)) {
-                if (params.language != "en" || params.translate) {
-                    params.language = "en";
-                    params.translate = false;
-                    fprintf(stderr, "%s: WARNING: model is not multilingual, ignoring language and translation options\n", __func__);
-                }
-            }
-            fprintf(stderr, "\n");
-        }
-
-        // run the inference
+				// run the inference
         {
             whisper_full_params wparams = whisper_full_default_params(WHISPER_SAMPLING_GREEDY);
 
@@ -754,6 +737,7 @@ int main(int argc, char ** argv) {
             wparams.print_special    = params.print_special;
             wparams.translate        = params.translate;
             wparams.language         = params.language.c_str();
+            wparams.detect_language  = params.detect_language;
             wparams.n_threads        = params.n_threads;
             wparams.n_max_text_ctx   = params.max_context >= 0 ? params.max_context : wparams.n_max_text_ctx;
             wparams.offset_ms        = params.offset_t_ms;
