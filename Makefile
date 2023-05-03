@@ -32,9 +32,11 @@ endif
 # Compile flags
 #
 
-CFLAGS   = -I.              -O3 -DNDEBUG -std=c11   -fPIC
-CXXFLAGS = -I. -I./examples -O3 -DNDEBUG -std=c++11 -fPIC
-LDFLAGS  =
+CC = clang-17
+CXX = clang++-17
+CFLAGS   = -I.              -Oz -DNDEBUG -std=c11   -fPIC
+CXXFLAGS = -I. -I./examples -Oz -DNDEBUG -std=c++11 -fPIC
+LDFLAGS  = -fuse-ld=lld
 
 # ref: https://github.com/ggerganov/whisper.cpp/issues/37
 ifneq ($(wildcard /usr/include/musl/*),)

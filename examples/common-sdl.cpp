@@ -24,10 +24,6 @@ bool audio_async::init(int capture_id, int sample_rate) {
 
     {
         int nDevices = SDL_GetNumAudioDevices(SDL_TRUE);
-        fprintf(stderr, "%s: found %d capture devices:\n", __func__, nDevices);
-        for (int i = 0; i < nDevices; i++) {
-            fprintf(stderr, "%s:    - Capture device #%d: '%s'\n", __func__, i, SDL_GetAudioDeviceName(i, SDL_TRUE));
-        }
     }
 
     SDL_AudioSpec capture_spec_requested;
@@ -47,10 +43,8 @@ bool audio_async::init(int capture_id, int sample_rate) {
     capture_spec_requested.userdata = this;
 
     if (capture_id >= 0) {
-        fprintf(stderr, "%s: attempt to open capture device %d : '%s' ...\n", __func__, capture_id, SDL_GetAudioDeviceName(capture_id, SDL_TRUE));
         m_dev_id_in = SDL_OpenAudioDevice(SDL_GetAudioDeviceName(capture_id, SDL_TRUE), SDL_TRUE, &capture_spec_requested, &capture_spec_obtained, 0);
     } else {
-        fprintf(stderr, "%s: attempt to open default capture device ...\n", __func__);
         m_dev_id_in = SDL_OpenAudioDevice(nullptr, SDL_TRUE, &capture_spec_requested, &capture_spec_obtained, 0);
     }
 
@@ -60,13 +54,6 @@ bool audio_async::init(int capture_id, int sample_rate) {
 
         return false;
     } else {
-        fprintf(stderr, "%s: obtained spec for input device (SDL Id = %d):\n", __func__, m_dev_id_in);
-        fprintf(stderr, "%s:     - sample rate:       %d\n",                   __func__, capture_spec_obtained.freq);
-        fprintf(stderr, "%s:     - format:            %d (required: %d)\n",    __func__, capture_spec_obtained.format,
-                capture_spec_requested.format);
-        fprintf(stderr, "%s:     - channels:          %d (required: %d)\n",    __func__, capture_spec_obtained.channels,
-                capture_spec_requested.channels);
-        fprintf(stderr, "%s:     - samples per frame: %d\n",                   __func__, capture_spec_obtained.samples);
     }
 
     m_sample_rate = capture_spec_obtained.freq;

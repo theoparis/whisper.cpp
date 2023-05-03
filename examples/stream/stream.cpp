@@ -175,19 +175,7 @@ int main(int argc, char ** argv) {
                 fprintf(stderr, "%s: WARNING: model is not multilingual, ignoring language and translation options\n", __func__);
             }
         }
-        fprintf(stderr, "%s: processing %d samples (step = %.1f sec / len = %.1f sec / keep = %.1f sec), %d threads, lang = %s, task = %s, timestamps = %d ...\n",
-                __func__,
-                n_samples_step,
-                float(n_samples_step)/WHISPER_SAMPLE_RATE,
-                float(n_samples_len )/WHISPER_SAMPLE_RATE,
-                float(n_samples_keep)/WHISPER_SAMPLE_RATE,
-                params.n_threads,
-                params.language.c_str(),
-                params.translate ? "translate" : "transcribe",
-                params.no_timestamps ? 0 : 1);
-
         if (!use_vad) {
-            fprintf(stderr, "%s: n_new_line = %d, no_context = %d\n", __func__, n_new_line, params.no_context);
         } else {
             fprintf(stderr, "%s: using VAD, will transcribe on speech activity\n", __func__);
         }
@@ -208,7 +196,6 @@ int main(int argc, char ** argv) {
         }
     }
 
-    printf("[Start speaking]");
     fflush(stdout);
 
           auto t_last  = std::chrono::high_resolution_clock::now();
@@ -334,7 +321,7 @@ int main(int argc, char ** argv) {
                     const char * text = whisper_full_get_segment_text(ctx, i);
 
                     if (params.no_timestamps) {
-                        printf("%s", text);
+                        printf("%s\n", text);
                         fflush(stdout);
 
                         if (params.fname_out.length() > 0) {
@@ -357,8 +344,8 @@ int main(int argc, char ** argv) {
                 }
 
                 if (use_vad){
-                    printf("\n");
-                    printf("### Transcription %d END\n", n_iter);
+                    //printf("\n");
+                    //printf("### Transcription %d END\n", n_iter);
                 }
             }
 
@@ -389,7 +376,6 @@ int main(int argc, char ** argv) {
 
     audio.pause();
 
-    whisper_print_timings(ctx);
     whisper_free(ctx);
 
     return 0;
